@@ -1,0 +1,16 @@
+appId: electron-uns-workaround
+productName: electron-uns-workaround
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+afterPack: "./build/afterpack.js"
+asar: true
+
+files:
+- "./build/**/*"
+
+linux:
+  category: Network
+  description: example
+  target:
+  - target: AppImage
+    arch:
+    - x64
