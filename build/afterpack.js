@@ -1,17 +1,24 @@
 
-const { exec } = require('child_process');
-const fs = require('fs-extra');
-const os = require('os');
+const { execSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 const { chdir } = require('process');
-const util = require('util');
 
-const execAsync = util.promisify(exec);
+/**
+ * Give everybody the permission to read and execute chrome-sandbox.
+ * 
+ * @param {Object} obj - AfterPackContext.
+ * @param {string} obj.appOutDir - Directory of unpacked app.
+ */
+const setSandboxPermission = ({ appOutDir }) =>
+  execSync(`chmod 4755 ${path.join(appOutDir, 'chrome-sandbox')}`);
 
-const setSandboxPermission = async ({ targets, appOutDir }) =>
-  exec(`chmod 4755 ${path.join(appOutDir, 'chrome-sandbox')}`);
-
-const disableSandboxing = async (context) => {
+/**
+ * Add loader script to unpacked app for AppImages and Snaps
+ * 
+ * @param {Object} obj - AfterPackContext.
+ */
+const disableSandboxing = (context) => {
   const needsCheck = context.targets.find((target) => target.name === 'appImage' || target.name === 'snap');
 
   if (!needsCheck) {
@@ -25,19 +32,20 @@ const disableSandboxing = async (context) => {
   chdir(dirname);
 
   // Rename generated entry file
-  await execAsync(`mv ${appName} ${appName}.bin`);
+  execSync(`mv ${appName} ${appName}.bin`);
 
   // Create loader script with original entry file name
-  const loaderScript = await fs.readFile(path.join(originalDir, 'scripts/ensure-uns-loader.sh'), 'utf8');
-  fs.outputFileSync(appName, loaderScript.replace('$APP_NAME', appName));
-  await execAsync(`chmod +x ${appName}`);
+  const loaderScript = fs.readFileSync(path.join(originalDir, 'scripts/ensure-uns-loader.sh'), 'utf8');
+  fs.writeFileSync(appName, loaderScript.replace('$APP_NAME', appName));
+  execSync(`chmod +x ${appName}`);
 
   chdir(originalDir);
 };
 
-exports.default = async (context) => {
-  if (os.platform() === 'linux') {
-    await setSandboxPermission(context);
-    await disableSandboxing(context);
+exports.default = (context) => {
+  const platformName = context.electronPlatformName.toLowerCase();
+  if (platformName === 'linux') {
+    setSandboxPermission(context);
+    disableSandboxing(context);
   }
 };
