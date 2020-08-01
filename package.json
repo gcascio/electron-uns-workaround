@@ -1,6 +1,6 @@
 {
-  "name": "electron-builder-21",
-  "version": "1.0.0",
+  "name": "electron-uns-workaround",
+  "version": "2.0.0",
   "description": "",
   "author": "Giovanni Cascio <giova-@live.de>",
   "homepage": "",
@@ -13,7 +13,6 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^5.0.6",
-    "electron-builder": "^20.44.4",
-    "fs-extra": "^8.1.0"
+    "electron-builder": "^20.44.4"
   }
 }
